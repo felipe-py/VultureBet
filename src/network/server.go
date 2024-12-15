@@ -3,9 +3,10 @@ package network
 // OBS: cada nó vai atuar como servidor e como cliente, aqui estão as funções necessarias para executar a parte de "servidor" de cada nó
 
 import (
-  "encoding/json"
-  "fmt"
-  "net"
+	"bet/blockchain"
+	"encoding/json"
+	"fmt"
+	"net"
 )
 
 // Função para iniciar o servidor do nó
@@ -24,5 +25,13 @@ func IniciarServ (porta string) {
 func processarConexao (conexao net.Conn) {
   defer conexao.Close()
   // Enviar e receber a blockchain que está ativa
-  json.NewEncoder(conexao).Encode("Conectado")
+  json.NewEncoder(conexao).Encode(blockchain.PegarBlockchain())
+
+  var blockchainRecebida []blockchain.Bloco
+  json.NewDecoder(conexao).Decode(&blockchainRecebida)
+  blockchainAtualizada := blockchain.ResolverConflitos(blockchainRecebida)
+  if blockchainAtualizada {
+    fmt.Println("A blockchain foi atualizada com sucesso. ")
+  }
+
 }

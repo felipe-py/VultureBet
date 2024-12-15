@@ -63,5 +63,15 @@ func FinalizarAposta (apostas []Aposta) string {
   return resultado
 }
 
+// só para facilitar a vida com as conexões
+func PegarBlockchain () []Bloco {
+  return blockchainLocal
+}
+
+// Quando receber uma blockchain mais atualizada
+func SubstituirBlockChain (novaBlockchain []Bloco) {
+  blockchainLocal = novaBlockchain
+}
+
 // Blockchain rodando localmente em memória
 var blockchainLocal []Bloco

@@ -8,10 +8,9 @@ import (
 //   "net"           // Para as conexoes, no caso o TCP/IP
 //   "time"          // Para pegar data e hora
     "bet/blockchain"
-    "bet/network"
-    // "storage"
-    // "tests"
-    // "utils"
+    // "bet/network"
+    // "bet/storage"
+    // "bet/tests"
 )
 
 // Blockchain como um array de Blocos
