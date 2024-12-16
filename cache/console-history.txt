@@ -1,0 +1,8 @@
+unts.map(account => account.address));
+const accoconsole.log(acco
+const { ethers } = require("hardhat");
+const accoconsole.log(accounts.map(account => account.address));
+const { ethers } = require("hardhat");
+console
+const accounts = await ethers.getSigners();
+.help
