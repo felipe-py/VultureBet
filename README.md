@@ -73,8 +73,12 @@ utilizando a biblioteca go-ethereum. Essas APIs permitem que os usuários enviem
 * Os pagamentos são processados automaticamente utilizando a função transfer do Ethereum.
 
 * Validação, segurança e imutabilidade
-//Refazer esse pedaço
-Todos os dados são armazenados na blockchain, garantindo imutabilidade. A validade das transações é assegurada pelo mecanismo de consenso inerente ao Geth.
+
+Toda a validação do sistema é feita pelos nós do blockchain, antes da inclusão no bloco. É verificado se o emissor da transação possui saldo suficiente para iniciar buma operação, se a transação assinada possui autenticidade e a validade do contrato inteligente.
+
+A segurança do sistema de maneira geral é garntida pelas várias camadas fornecidas pelo modelo blockchain. Hashes são utilizados para forma uma cadeia inquebrável e descentralizada, onde cada nó mantem uma cópia completa do blockchain.
+
+A imutabilidade do sistema é fornecidade de maneira geral pelo uso do contrato inteligente, assegurando que as regras para as apostas sejam executadas sema  possibilidade de manipulação.
 
 </div>
 </div>
