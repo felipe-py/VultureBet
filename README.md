@@ -25,6 +25,7 @@ O objetivo principal é explorar conceitos fundamentais de blockchain, como desc
         <li><a href="#funcionamento"> Funcionamento do Sistema </a></li>
         <li><a href="#confiabilidade"> Confiabilidade da Solução </a></li>
         <li><a href="#blockchain"> Blockchain </a></li>
+        <li><a href="contrato"> Contrato </a></li>
         <li><a href="#conclusao"> Conclusão </a></li>
         <li><a href="#referencias"> Referências </a></li>
 	</ul>	
@@ -89,8 +90,7 @@ A imutabilidade do sistema é fornecidade de maneira geral pelo uso do contrato 
 
 A solução foi projetada para suportar múltiplos nós em simultâneo, permitindo que diferentes máquinas participem da rede distribuída. Cada nó mantém uma cópia local da blockchain, processando transações independentemente e sincronizando periodicamente com os demais nós da rede.
 
-A escalabilidade do sistema é limitada principalmente pela capacidade de processamento de transações da blockchain privada, que depende do muito do tamanho dos blocos. Por outro lado, a estabilidade é garantida pelo uso de Go-Ethereum, que lida automaticamente com mineração, consenso e persistência dos dados, reduzindo o risco de falhas no processamento das transações.
-
+O projeto entretanto, não foi integrado em sua totalidade, ou seja, não é possível atestar sua confiabilidade de maneira completa.
 </div>
 </div>
 
@@ -123,14 +123,72 @@ Para o emprego da blockchain nesse projeto foram utilizadas as seguintes ferrame
 </div>
 </div>
 
+<div id="contrato">
+<h2> Contrato </h2>
+<div align="justify">
+
+A solução utiliza um smart contract que é um programa autoexecutável baseado em blockchain, contendo as regras e acordos necessários entre as partes envolvidas codificados em 'Solidity'. Ele garante segurança e transparência, eliminando intermediários, e no caso de contratos em 'Solidity', eles são implementados na blockchain Ethereum, garantindo que as transações sejam imutáveis e verificáveis.
+O VultureBet gerencia apostas de forma descentralizada, permitindo a criação de apostas, registro de participantes e distribuição de prêmios de acordo com o resultado. A blockchain registra todas as operações, protegendo a integridade do sistema.
+
+O contrato está estruturado para criar um sistema de apostas descentralizado, nele estão contidas variáveis como 'apostas' (um mapeamento de estruturas de apostas) e saldo de cada usuário. Há ainda funções para criar apostas, registrar participantes e finalizar o evento, distribuindo os valores de acordo com os resultados. Alguns eventos, como ApostaFinalizada, são emitidos para notificar as interações importantes.
+
+Para poder usar o contrato em uma blockchain são necessários 2 arquivos: o 'ABI' e o binário. Ambos podem ser gerados ao compilar o contrato se utilizando do compilador 'solc' com o seguinte comando:
+								solc --optimize --bin --abi contrato_bet.sol -o ./build
+	
+	1.1.Variáveis e estruturas do contrato:
+		1.1.1.Aposta:
+		estrutura que define uma aposta contendo as seguintes informações: criador da aposta; valor total acumulado no pote; resultado do evento; se foi finalizado; valores apostados pelos usuários e quantias apostadas pelos usuários
+
+		1.1.2.apostas:
+		uma lista das apostas feitas naquele evento
+
+		1.1.3.apostaCount:
+		um contador para o número da aposta, usado para garantir que nenhuma aposta tenha o ID de outra
+
+		1.1.3.saldo:
+		uma lista contendo o saldo dos usuários
+	
+
+	1.2. Funções do contrato:
+	As funções descrevem uma série de procedimentos que são executados de acordo com a política do contrato, cada uma pode receber alguns parâmetros e retornar alguns resultados, as funções do contrato seguem:
+		1.2.1.criarAposta:
+		Não precisa de nenhuma entrada e retorna apenas o ID único da nova aposta que foi gerada permitindo ao usuário criar um novo evento em que podem ser realizadas as apostas
+		
+		1.2.2.registrarAposta:
+		Recebe de entrada o ID do evento em que se deseja apostar, o valor a ser apostado e o resultado em que se quer apostar. Não retorna qualquer valor, contudo cria uma nova aposta para aquele evento no nome do usuário que esteja apostando
+
+		1.2.3.finalizarAposta:
+		Recebe o ID da aposta em que se deseja finalizar. Caso o usuário seja o criador da aposta essa função determina o resultado da aposta e distribui o prêmio entre os vencedores. Ela retorna os dados: o ID; o resultado da aposta; o valor do pote e o valor distribuído
+
+		1.2.4.getPote:
+		Recebe o ID da aposta e retorna o valor acumulado no pote da mesma.
+
+		1.2.5.getSaldo:
+		Não recebe parâmetros e retorna o saldo que um dado usuário tem em sua conta
+
+		1.2.6.depositar:
+		Recebe o valor a ser depositado e o adiciona no saldo do usuário
+
+		1.2.7.sacar:
+		Recebe o valor a ser sacado e o deduz do saldo
+
+	1.3.Eventos do contrato:
+	Eventos são estruturas cujo setido é autoexplicativo e descrevem acontecimentos durante a execução da blockchain
+		
+		1.3.1.ApostaFinalizada:
+		finaliza a aposta estabelecendo um resultado e a distribuição do pote estre os participantes. Ocorre quando o dono da aposta determina
+
+</div>
+</div>
+
 <div id="conclusao">
 <h2> Conclusão </h2>
 <div align="justify">
 
-O projeto proporciona uma solução descentralizada para um sistema de apostas, e a utilização da tecnologia blockchain garantiu a imutabilidade e a segurança dos dados. Os contratos inteligentes viabilizaram a gestão automatizada das apostas e pagamentos, e a estrutura é escalável para redes privadas de pequeno a médio porte podendo ser facilmente adaptada para incluir novos recursos ou operações.
+O projeto cumpriu de maneira limitada o que foi proposto, devido a não integração de todos os elementos presentes no desenvolvimento.
+Cada tópico desenvolvido foi testado e executado de forma independente, entretanto, devido a problemas de dependência sua integração não foi realizada.
 
-Porém, a solução pode enfrentar limitações em cenários de alta demanda devido à capacidade de processamento da blockchain, que é sempre bom lembrar que acaba por criar problemas de grande complexidade que podem se provar desafiadores para hardwares mais limitados. No geral, a solução demonstrou ser funcional, robusta e alinhada aos princípios fundamentais da tecnologia blockchain.
-
+É interessante que a solução seja totalmente integrada, atestando assim o cumprimento de cada funcionalidade em sua forma individual e conjunta.
 
 </div>
 </div>
