@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulture Bet</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Vulture Bet - Apostas</h1>
+    <p><strong>Conectar MetaMask:</strong></p>
+    <button id="connect">Conectar</button>
+    <p id="account">Conta conectada: nenhuma</p>
+
+    <h2>Operações</h2>
+    <p id="saldo">Saldo: 0 ETH</p>
+    <input type="text" id="valorOperacoesFinanceiras" placeholder="Ex.: 0.1"><br>
+    <button id="deposito">Depositar</button>
+    <button id="saque">Sacar</button>
+
+    <h2>Apostas</h2>
+    <button id="criar">Criar Nova Aposta</button>
+    <p id="novaAposta">ID da nova aposta: -</p>
+
+    <h3>Registrar Aposta</h3>
+    <label for="apostaID">ID da Aposta:</label>
+    <input type="text" id="apostaID" placeholder="ID"><br>
+    <label for="escolha">Escolha (cara/coroa):</label>
+    <input type="text" id="escolha" placeholder="cara ou coroa"><br>
+    <label for="valorAposta">Valor da Aposta (ETH):</label>
+    <input type="text" id="valorAposta" placeholder="Ex.: 0.1"><br>
+    <button id="registrar">Registrar Aposta</button>
+
+    <h3>Finalizar Evento</h3>
+    <label for="apostaFinalizar">ID da Aposta:</label>
+    <input type="text" id="apostaFinalizar" placeholder="ID"><br>
+    <button id="finalizar">Finalizar Evento</button>
+
+    <script>
+        const contractAddress = "0xd9145CCE52D386f254917e481eB44e9943F39138"; // Substitua pelo endereço
+        const contractABI = [
+        {
+            "inputs": [],
+            "name": "criarAposta",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "depositar",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_id",
+                    "type": "uint256"
+                }
+            ],
+            "name": "finalizarAposta",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_id",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_escolha",
+                    "type": "string"
+                }
+            ],
+            "name": "registrarAposta",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_valor",
+                    "type": "uint256"
+                }
+            ],
+            "name": "sacar",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "apostaCount",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "apostas",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "criador",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "valorTotal",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "resultado",
+                    "type": "string"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "finalizado",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_id",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getPote",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getSaldo",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "saldo",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ];         // Substitua pelo ABI
+        let web3, contract, userAccount;
+
+        document.getElementById("connect").addEventListener("click", async () => {
+            if (window.ethereum) {
+                await ethereum.request({ method: "eth_requestAccounts" });
+                web3 = new Web3(window.ethereum);
+                userAccount = (await web3.eth.getAccounts())[0];
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+                document.getElementById("account").innerText = `Conta: ${userAccount}`;
+                atualizarSaldo();
+            }
+        });
+
+        async function atualizarSaldo() {
+            const saldo = await contract.methods.getSaldo().call({ from: userAccount });
+            document.getElementById("saldo").innerText = `Saldo: ${web3.utils.fromWei(saldo, "ether")} ETH`;
+        }
+
+        document.getElementById("deposito").addEventListener("click", async () => {
+            const valor = document.getElementById("valorOperacoesFinanceiras").value;
+            await contract.methods.depositar().send({ from: userAccount, value: web3.utils.toWei(valor, "ether") });
+            atualizarSaldo();
+        });
+
+        document.getElementById("saque").addEventListener("click", async () => {
+            const valor = document.getElementById("valorOperacoesFinanceiras").value;
+            await contract.methods.sacar(web3.utils.toWei(valor, "ether")).send({ from: userAccount });
+            atualizarSaldo();
+        });
+
+        document.getElementById("criar").addEventListener("click", async () => {
+            const id = await contract.methods.criarAposta().send({ from: userAccount });
+            document.getElementById("novaAposta").innerText = `ID da nova aposta: ${id.events.ApostaCriada.returnValues.id}`;
+        });
+
+        document.getElementById("registrar").addEventListener("click", async () => {
+            const id = document.getElementById("apostaID").value;
+            const escolha = document.getElementById("escolha").value;
+            const valor = document.getElementById("valorAposta").value;
+            await contract.methods.registrarAposta(id, escolha).send({
+                from: userAccount,
+                value: web3.utils.toWei(valor, "ether")
+            });
+            alert("Aposta registrada!");
+        });
+
+        document.getElementById("finalizar").addEventListener("click", async () => {
+            const id = document.getElementById("apostaFinalizar").value;
+            await contract.methods.finalizarAposta(id).send({ from: userAccount });
+            alert("Evento finalizado!");
+        });
+    </script>
+</body>
+</html>

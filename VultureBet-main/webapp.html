@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulture Bet</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        button {
+            margin-top: 10px;
+            margin-right: 5px;
+        }
+        input {
+            margin-top: 10px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vulture Bet</h1>
+
+    <div>
+        <h3>Saldo</h3>
+        <input type="text" id="valorSaldo" placeholder="Valor em ETH">
+        <button id="adicionarSaldo">Adicionar Saldo</button>
+        <button id="sacarSaldo">Sacar Saldo</button>
+    </div>
+
+    <div>
+        <h3>Criar uma Nova Bet</h3>
+        <button id="criarBet">Criar Bet</button>
+    </div>
+
+    <div>
+        <h3>Fazer uma Aposta</h3>
+        <input type="text" id="idAposta" placeholder="ID da aposta">
+        <input type="text" id="valorAposta" placeholder="Valor da aposta em ETH">
+        <input type="text" id="escolha" placeholder="Escolha (cara ou coroa)">
+        <button id="apostar">Apostar</button>
+    </div>
+
+    <div>
+        <h3>Finalizar uma Aposta</h3>
+        <input type="text" id="idFinalizar" placeholder="ID da aposta">
+        <button id="finalizarBet">Finalizar Aposta</button>
+    </div>
+
+    <div>
+        <h3>Consultar Pote</h3>
+        <input type="text" id="idConsultarPote" placeholder="ID da aposta">
+        <button id="consultarPote">Consultar Pote</button>
+        <p id="resultadoPote">Pote: -</p>
+    </div>
+
+    <div>
+        <h3>Buscar Bets Ativas</h3>
+        <button id="buscarBetsAtivas">Buscar Bets Ativas</button>
+        <ul id="listaBetsAtivas"></ul>
+    </div>
+
+    <script>
+        let web3;
+        let account;
+        let contract;
+
+        const contractAddress = ""; // endereço do contrato
+        const contractABI = ABI; // ABI do contrato
+
+
+        // Função para depósito
+        document.getElementById("adicionarSaldo").addEventListener("click", async () => {
+            const valor = document.getElementById("valorSaldo").value;
+            if (!valor) {
+                alert("Insira um valor!");
+                return;
+            }
+            const valorWei = web3.utils.toWei(valor, "ether");
+            try {
+                await contract.methods.depositar().send({ from: account, value: valorWei });
+                alert("Saldo adicionado com sucesso!");
+            } catch (error) {
+                console.error("Erro ao adicionar saldo:", error);
+            }
+        });
+
+        // Função para saque
+        document.getElementById("sacarSaldo").addEventListener("click", async () => {
+            const valor = document.getElementById("valorSaldo").value;
+            if (!valor) {
+                alert("Insira um valor!");
+                return;
+            }
+            try {
+                await contract.methods.sacar(web3.utils.toWei(valor, "ether")).send({ from: account });
+                alert("Saldo sacado com sucesso!");
+            } catch (error) {
+                console.error("Erro ao sacar saldo:", error);
+            }
+        });
+
+        // Função para criar uma bet nova
+        document.getElementById("criarBet").addEventListener("click", async () => {
+            try {
+                const tx = await contract.methods.criarAposta().send({ from: account });
+                alert(`Nova bet criada com ID: ${tx.events.ApostaCriada.returnValues.id}`);
+            } catch (error) {
+                console.error("Erro ao criar nova bet:", error);
+            }
+        });
+
+        // Função para dar um lance em uma bet já existente
+        document.getElementById("apostar").addEventListener("click", async () => {
+            const id = document.getElementById("idAposta").value;
+            const valor = document.getElementById("valorAposta").value;
+            const escolha = document.getElementById("escolha").value;
+            if (!id || !valor || !escolha) {
+                alert("Preencha todos os campos!");
+                return;
+            }
+            try {
+                await contract.methods
+                    .registrarAposta(id, web3.utils.toWei(valor, "ether"), escolha)
+                    .send({ from: account });
+                alert("Aposta registrada com sucesso!");
+            } catch (error) {
+                console.error("Erro ao registrar aposta:", error);
+            }
+        });
+
+        // Função para finalizar a bet
+        document.getElementById("finalizarBet").addEventListener("click", async () => {
+            const id = document.getElementById("idFinalizar").value;
+            if (!id) {
+                alert("Insira o ID da aposta!");
+                return;
+            }
+            try {
+                await contract.methods.finalizarAposta(id).send({ from: account });
+                alert("Aposta finalizada com sucesso!");
+            } catch (error) {
+                console.error("Erro ao finalizar aposta:", error);
+            }
+        });
+
+        // Função para consultar o valor do pote da bet que será repartido entre os vencedores
+        document.getElementById("consultarPote").addEventListener("click", async () => {
+            const id = document.getElementById("idConsultarPote").value;
+            if (!id) {
+                alert("Insira o ID da aposta!");
+                return;
+            }
+            try {
+                const [totalPote, totalCara, totalCoroa] = await contract.methods.getPote(id).call();
+                document.getElementById(
+                    "resultadoPote"
+                ).innerText = `Pote Total: ${web3.utils.fromWei(
+                    totalPote,
+                    "ether"
+                )} ETH, Cara: ${web3.utils.fromWei(totalCara, "ether")} ETH, Coroa: ${web3.utils.fromWei(
+                    totalCoroa,
+                    "ether"
+                )} ETH`;
+            } catch (error) {
+                console.error("Erro ao consultar pote:", error);
+            }
+        });
+
+        // Função para buscar bets criadas que ainda estejam ativas
+        document.getElementById("buscarBetsAtivas").addEventListener("click", async () => {
+            document.getElementById("listaBetsAtivas").innerHTML = "";
+            for (let i = 1; i <= 10; i++) {
+                try {
+                    const aposta = await contract.methods.apostas(i).call();
+                    if (!aposta.finalizado) {
+                        const li = document.createElement("li");
+                        li.innerText = `ID: ${i}, Criador: ${aposta.criador}, Pote: ${web3.utils.fromWei(
+                            aposta.valorTotal,
+                            "ether"
+                        )} ETH`;
+                        document.getElementById("listaBetsAtivas").appendChild(li);
+                    }
+                } catch (error) {
+                    console.log(`Erro ao buscar aposta ${i}:`, error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
